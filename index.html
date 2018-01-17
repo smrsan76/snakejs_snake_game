@@ -1,0 +1,396 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset='utf-8' />
+	<title></title>
+	<script language="javascript" type='text/javascript' src='../snake.js' ></script>
+	<script language='javascript' type='text/javascript' >
+	
+	var snake_dir = "RIGHT",
+		snake_body_x = [1],
+		snake_body_y = [1],
+		before_last_body = null,
+		tab_width = 50,
+		tab_height = 32,
+		inter = null,
+		apple_loc = {x:Math.ceil(tab_width/2),y:Math.ceil(tab_height/2)},
+		map_blocks = [];
+	
+	S(function(){
+		
+		game_beginer(tab_width,tab_height);
+		
+		make_map();
+		
+		document.addEventListener("keydown",function(e){
+			
+			let kc = e.keyCode || e.which;
+			
+			switch(kc){
+				
+				case 37:
+					
+					game_change_dir("LEFT");
+					
+				break;
+				case 38:
+					
+					game_change_dir("UP");
+					
+				break;
+				case 39:
+					
+					game_change_dir("RIGHT");
+					
+				break;
+				case 40:
+					
+					game_change_dir("DOWN");
+					
+				break;
+				
+			}
+			
+		});
+		
+	});
+	
+	function make_map(){
+		
+		for(let i=0; i<map_blocks.length; i++){
+			
+			S("#tab" + map_blocks[i].x + "-" + map_blocks[i].y).attr("class",'map-blocks');
+			
+		}
+		
+	}
+	
+	function show_score(){
+		
+		S('#score-box').html("Score: " + snake_body_x.length);
+		
+	}
+	
+	function check_collision(){
+		
+		for(let i=1; i<snake_body_x.length; i++){
+			
+			if(snake_body_x[0] === snake_body_x[i] && snake_body_y[0] === snake_body_y[i]){
+				clearInterval(inter);
+				alert("Score: " + snake_body_x.length);
+				game_beginer(tab_width,tab_height)
+				break;
+			}
+			
+		}
+		
+	}
+	
+	function getVars(){
+		
+		let str = "";
+		
+		str += "snake_body: [";
+		for(let i=0; i<snake_body_x.length; i++){
+			
+			str += "{X:" + snake_body_x[i] + " ,Y:" + snake_body_y[i] + "},";
+			
+		}
+		str += "]<br/>apple_loc: {X:" + apple_loc.x + " ,Y:" + apple_loc.y + "}";
+		str += "]";
+		
+		return str;
+		
+	}
+	
+	function game_eat_apple(){
+		
+		game_add_body();
+		let validAppleLoc = false;
+		
+		while(!validAppleLoc){
+			
+			apple_loc.x = Math.floor( (Math.random()*tab_width)+1 );
+			apple_loc.y = Math.floor( (Math.random()*tab_height)+1 );
+			
+			let change = false;
+			
+			for(let i=0; i<snake_body_x.length; i++){
+				
+				if(apple_loc.x === snake_body_x[i] && apple_loc.y === snake_body_y[i]){
+					change = true;
+					break;
+				}
+				
+			}
+			
+			if(!change) validAppleLoc = true;
+			
+		}
+		
+		show_score();
+		
+	}
+	
+	function game_add_body(){
+		
+		snake_body_x.push(before_last_body.x);
+		snake_body_y.push(before_last_body.y);
+		
+	}
+	
+	function game_change_dir(dir){
+		
+		snake_dir = dir;
+		
+	}
+	
+	function game_frame(){
+		
+		S([".snake-head",".snake-body",".snake2-head",".snake2-body"]).attr("class","");
+		
+		let last_loc = {x:null,y:null};
+		
+		//Moving Conditions
+		switch(snake_dir){
+			
+			case "RIGHT":
+				
+				last_loc = {x:snake_body_x[0], y:snake_body_y[0]};
+				snake_body_x[0]++;
+				if(snake_body_x[0] > tab_width) snake_body_x[0] = 1;
+				
+				for(let i=1; i<snake_body_x.length; i++){
+					
+					let temp = {x:snake_body_x[i], y:snake_body_y[i]};
+					snake_body_x[i] = last_loc.x;
+					snake_body_y[i] = last_loc.y;
+					last_loc.x = temp.x;
+					last_loc.y = temp.y;
+					
+				}
+				
+				before_last_body = last_loc;
+				
+			break;
+			case "LEFT":
+				
+				last_loc = {x:snake_body_x[0], y:snake_body_y[0]};
+				snake_body_x[0]--;
+				if(snake_body_x[0] < 1) snake_body_x[0] = tab_width;
+				
+				for(let i=1; i<snake_body_x.length; i++){
+					
+					let temp = {x:snake_body_x[i], y:snake_body_y[i]};
+					snake_body_x[i] = last_loc.x;
+					snake_body_y[i] = last_loc.y;
+					last_loc.x = temp.x;
+					last_loc.y = temp.y;
+					
+				}
+				
+				before_last_body = last_loc;
+				
+			break;
+			case "UP":
+				
+				last_loc = {x:snake_body_x[0], y:snake_body_y[0]};
+				snake_body_y[0]--;
+				if(snake_body_y[0] < 1) snake_body_y[0] = tab_height;
+				
+				for(let i=1; i<snake_body_x.length; i++){
+					
+					let temp = {x:snake_body_x[i], y:snake_body_y[i]};
+					snake_body_x[i] = last_loc.x;
+					snake_body_y[i] = last_loc.y;
+					last_loc.x = temp.x;
+					last_loc.y = temp.y;
+					
+				}
+				
+				before_last_body = last_loc;
+				
+			break;
+			case "DOWN":
+				
+				last_loc = {x:snake_body_x[0], y:snake_body_y[0]};
+				snake_body_y[0]++;
+				if(snake_body_y[0] > tab_height) snake_body_y[0] = 1;
+				
+				for(let i=1; i<snake_body_x.length; i++){
+					
+					let temp = {x:snake_body_x[i], y:snake_body_y[i]};
+					snake_body_x[i] = last_loc.x;
+					snake_body_y[i] = last_loc.y;
+					last_loc.x = temp.x;
+					last_loc.y = temp.y;
+					
+				}
+				
+				before_last_body = last_loc;
+				
+			break;
+			
+		}
+		
+		if(apple_loc.x === snake_body_x[0] && apple_loc.y === snake_body_y[0]) game_eat_apple();
+		
+		//Apply Apple New Location
+		S("#tab" + apple_loc.x + "-" + apple_loc.y).attr("class","apples");
+		
+		//Apply New Locations
+		for(let i=1; i<snake_body_x.length; i++){
+			S("#tab" + snake_body_x[i] + "-" + snake_body_y[i]).attr("class","snake-body");
+		}
+		S("#tab" + snake_body_x[0] + "-" + snake_body_y[0]).attr("class","snake-head");
+		
+		//S("#debug-box").html(getVars());
+	}
+	
+	function delete_all_game(){
+		
+		for(let i=0; i<S('#center-box')[0].childNodes.length; i++) S(S('#center-box')[0].childNodes[i]).remove();
+		
+	}
+	
+	function game_beginer(width,height){
+		
+		delete_all_game();
+		
+		snake_dir = "RIGHT";
+		snake_body_x = [1];
+		snake_body_y = [1];
+		before_last_body = null,
+		apple_loc = {x:Math.ceil(tab_width/2),y:Math.ceil(tab_height/2)};
+		
+		show_score();
+		
+		let box = S("#center-box")[0],
+			table = S(box)
+					.appendChild(
+						S(S("$new","table"))
+						.attr("id","main-table","cellspacing","0").get()
+					,true)[0];
+		
+		for(let i=1; i<=height; i++){
+			
+			let row = S("$NEW","tr");
+			for(let j=1; j<=width; j++){
+				
+				let cell = S(S("$NEW","td")).attr("id","tab" + j + "-" + i)[0],
+					cell_sizer = S(S("$NEW","div")).attr("class","main-table-cell-sizer")[0];
+				
+				if(j == 1 && i == 1) S(cell).attr("class","snake-body");
+				
+				S(cell).appendChild(cell_sizer);
+				S(row).appendChild(cell);
+				
+			}
+			
+			S(table).appendChild(row);
+			
+		}
+		
+		inter = setInterval(function(){
+			
+			game_frame();
+			check_collision();
+			
+		},100);
+		
+	}
+	
+	</script>
+	<style>
+	
+	*{
+		box-sizing: border-box;
+	}
+	
+	html,body{
+		margin: 0;
+		padding: 0;
+		background-color: #34495e;
+		text-align: center;
+	}
+	#center-box{
+		display: block;
+		position: relative;
+		margin: 25px auto;
+		min-width: 512px;
+		min-height: 512px;
+		padding: 0;
+		text-align: center;
+	}
+	#main-table{
+		min-width: 512px;
+		min-height: 512px;
+		background-color: rgba(255,255,255,0.25);
+		margin: 0 auto;
+	}
+	#main-table tr td{
+		/*border-right: 1px solid #34495e;
+		border-bottom: 1px solid #34495e;*/
+		margin: 0;
+		padding: 0;
+	}
+	.main-table-cell-sizer{
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: 15px;
+		height: 15px;
+	}
+	.snake-head{
+		background-color: #1abc9c;
+	}
+	.snake-body{
+		background-color: #16a085;
+	}
+	#debug-box{
+		display: none;
+		min-width: 250px;
+		min-height: 100px
+		line-height: 25px;
+		font-size: 12px;
+		font-family: 'Courier New';
+		background-color: #ffe5e5;
+		position: relative;
+		margin: 0 auto;
+		padding: 2.5px 5px;
+	}
+	.apples{
+		position: relative;
+		background-color: #FF6C5C;
+	}
+	#score-box{
+		position: fixed;
+		min-width: 100px;
+		min-height: 50px;
+		line-height: 50px;
+		text-align: center;
+		padding: 5px 10px;
+		margin: 0;
+		top: 50px;
+		left: 50px;
+		background-color: #8e44ad;
+		color: #ecf0f1;
+		font-size: 24px;
+		font-family: 'Segoe UI';
+		
+		border-radius: 3px;
+	}
+	.map-blocks{
+		background-color: #ea4c88;
+	}
+	
+	</style>
+</head>
+<body>
+
+<div id='score-box' >Score: 1</div>
+<div id='center-box' ></div>
+<div id='debug-box' ></div>
+
+</body>
+</html>
